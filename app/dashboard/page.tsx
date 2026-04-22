@@ -31,7 +31,6 @@ export default function DashboardPage() {
     tasksToday: 0,
   });
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in
@@ -123,8 +122,6 @@ export default function DashboardPage() {
         setSchedule(scheduleItems.slice(0, 7)); // Show next 7 upcoming items
       } catch (error) {
         console.error('Error loading metrics:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
