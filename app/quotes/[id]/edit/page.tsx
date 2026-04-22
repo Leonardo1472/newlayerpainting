@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams, useParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
