@@ -409,32 +409,33 @@ function NewQuoteContent() {
                       const qty = typeof item.quantity === 'number' ? item.quantity : 1;
                       const itemTotal = price * qty;
                       return (
-                      <tr key={idx} className="border-b">
-                        <td className="py-2 px-2 font-medium">{item.name}</td>
-                        <td className="py-2 px-2 text-gray-600 text-xs">{item.description}</td>
-                        <td className="text-right py-2 px-2">${price.toFixed(2)}</td>
-                        <td className="text-right py-2 px-2">{qty}</td>
-                        <td className="text-right py-2 px-2 font-medium">${itemTotal.toFixed(2)}</td>
-                        <td className="text-center py-2 px-2 flex gap-2 justify-center">
-                          <button
-                            type="button"
-                            onClick={() => editItem(idx)}
-                            className="text-blue-600 hover:text-blue-700 text-lg"
-                            title="Edit item"
-                          >
-                            ✎
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteItem(idx)}
-                            className="text-red-600 hover:text-red-700 text-lg"
-                            title="Delete item"
-                          >
-                            ✕
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                        <tr key={idx} className="border-b">
+                          <td className="py-2 px-2 font-medium">{item.name}</td>
+                          <td className="py-2 px-2 text-gray-600 text-xs">{item.description}</td>
+                          <td className="text-right py-2 px-2">${price.toFixed(2)}</td>
+                          <td className="text-right py-2 px-2">{qty}</td>
+                          <td className="text-right py-2 px-2 font-medium">${itemTotal.toFixed(2)}</td>
+                          <td className="text-center py-2 px-2 flex gap-2 justify-center">
+                            <button
+                              type="button"
+                              onClick={() => editItem(idx)}
+                              className="text-blue-600 hover:text-blue-700 text-lg"
+                              title="Edit item"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteItem(idx)}
+                              className="text-red-600 hover:text-red-700 text-lg"
+                              title="Delete item"
+                            >
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
