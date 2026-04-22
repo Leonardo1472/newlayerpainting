@@ -47,7 +47,6 @@ export default function NewTaskPage() {
         return;
       }
 
-      const newTask = await res.json();
       router.push('/tasks');
     } catch (err) {
       setError('An error occurred. Please try again.');

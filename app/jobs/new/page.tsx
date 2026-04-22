@@ -62,7 +62,6 @@ function NewJobContent() {
         return;
       }
 
-      const newJob = await res.json();
       router.push(`/customers/${form.customerId}`);
     } catch (err) {
       setError('An error occurred. Please try again.');
