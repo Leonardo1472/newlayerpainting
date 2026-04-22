@@ -1,0 +1,340 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Users Table
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  customers     Customer[]
+  requests      Request[]
+  quotes        Quote[]
+  products      Product[]
+  invoices      Invoice[]
+  jobs          Job[]
+  tasks         Task[]
+  events        CalendarEvent[]
+
+  @@map("users")
+}
+
+// Customers Table
+model Customer {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?
+
+  isActive      Boolean   @default(true)
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  requests      Request[]
+  quotes        Quote[]
+  invoices      Invoice[]
+  jobs          Job[]
+  events        CalendarEvent[]
+
+  @@map("customers")
+}
+
+// Products/Services Table
+model Product {
+  id            String    @id @default(cuid())
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+  category      String?
+  sku           String?   @unique
+  unitPrice     Float
+  imageUrl      String?
+
+  isTaxable     Boolean   @default(false)
+  taxRate       Float     @default(0)
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  estimateItems EstimateItem[]
+  invoiceItems  InvoiceItem[]
+
+  @@map("products")
+}
+
+// Requests Table
+model Request {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+  status        String    @default("pending")
+
+  requestDate   DateTime
+  requestTime   String
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  quote         Quote?
+
+  @@map("requests")
+}
+
+// Estimates/Quotes Table
+model Quote {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  requestId     String?   @unique
+  request       Request?  @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  quoteNumber   String    @unique
+  title         String
+  description   String?
+
+  status        String    @default("draft")
+  sentAt        DateTime?
+  approvedAt    DateTime?
+  approvedBy    String?
+
+  subtotal      Float     @default(0)
+  discountType  String    @default("fixed")
+  discountValue Float     @default(0)
+  taxRate       Float     @default(0)
+  taxAmount     Float     @default(0)
+  depositAmount Float     @default(0)
+  total         Float     @default(0)
+
+  validUntil    DateTime?
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  items         EstimateItem[]
+  invoice       Invoice?
+  job           Job?
+
+  @@map("quotes")
+}
+
+// Quote/Estimate Line Items
+model EstimateItem {
+  id            String    @id @default(cuid())
+  quoteId       String
+  quote         Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  description   String
+  quantity      Int       @default(1)
+  unitPrice     Float
+  total         Float
+
+  sortOrder     Int       @default(0)
+
+  @@map("estimate_items")
+}
+
+// Jobs Table
+model Job {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  quoteId       String    @unique
+  quote         Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  jobNumber     String    @unique
+  title         String
+  description   String?
+
+  status        String    @default("not_started")
+  priority      String    @default("medium")
+
+  startDate     DateTime?
+  dueDate       DateTime?
+  completedDate DateTime?
+
+  notes         String?
+  estimatedHours Float?
+  actualHours   Float?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  tasks         Task[]
+  invoice       Invoice?
+  events        CalendarEvent[]
+
+  @@map("jobs")
+}
+
+// Invoices Table
+model Invoice {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  quoteId       String?   @unique
+  quote         Quote?    @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  jobId         String?   @unique
+  job           Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  invoiceNumber String    @unique
+  status        String    @default("draft")
+
+  issueDate     DateTime  @default(now())
+  dueDate       DateTime?
+  paidDate      DateTime?
+  sentAt        DateTime?
+
+  subtotal      Float     @default(0)
+  discountType  String    @default("fixed")
+  discountValue Float     @default(0)
+  taxRate       Float     @default(0)
+  taxAmount     Float     @default(0)
+  total         Float     @default(0)
+  amountPaid    Float     @default(0)
+
+  // Stripe Integration
+  stripeInvoiceId String?
+  stripePaymentUrl String?
+  paymentMethod String?
+
+  notes         String?
+  paymentTerms  String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  items         InvoiceItem[]
+
+  @@map("invoices")
+}
+
+// Invoice Line Items
+model InvoiceItem {
+  id            String    @id @default(cuid())
+  invoiceId     String
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId     String?
+  product       Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  description   String
+  quantity      Int       @default(1)
+  unitPrice     Float
+  total         Float
+
+  sortOrder     Int       @default(0)
+
+  @@map("invoice_items")
+}
+
+// Daily Tasks Table
+model Task {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId         String?
+  job           Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  title         String
+  description   String?
+  status        String    @default("pending")
+  priority      String    @default("medium")
+
+  dueDate       DateTime?
+  dueTime       String?
+  completedAt   DateTime?
+
+  isRecurring   Boolean   @default(false)
+  recurrencePattern String?
+
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  events        CalendarEvent[]
+
+  @@map("tasks")
+}
+
+// Calendar Events Table
+model CalendarEvent {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  jobId         String?
+  job           Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  taskId        String?
+  task          Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  title         String
+  description   String?
+
+  startDate     DateTime
+  endDate       DateTime
+
+  eventType     String    @default("appointment")
+  location      String?
+
+  isAllDay      Boolean   @default(false)
+  isRecurring   Boolean   @default(false)
+  recurrencePattern String?
+
+  color         String?   @default("blue")
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("calendar_events")
+}
