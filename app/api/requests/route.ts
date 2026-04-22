@@ -20,6 +20,13 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
+    if (date) {
+      where.requestDate = {
+        gte: new Date(date),
+        lt: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000),
+      };
+    }
+
     const requests = await db.request.findMany({
       where,
       include: {
