@@ -154,7 +154,6 @@ export default function QuoteDetailPage() {
   }
 
   const discountAmount = quote.discountAmount || 0;
-  const priceAfterDiscount = quote.subtotal - discountAmount;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
