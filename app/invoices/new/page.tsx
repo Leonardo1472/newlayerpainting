@@ -87,7 +87,6 @@ function NewInvoiceContent() {
         return;
       }
 
-      const newInvoice = await res.json();
       router.push(`/customers/${form.customerId}`);
     } catch (err) {
       setError('An error occurred. Please try again.');
